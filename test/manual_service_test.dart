@@ -15,7 +15,7 @@ void main() {
     print('--- DÉBUT DU TEST MANUEL ---');
 
     // 1. Préparation de l'image de test
-    final File imageFile = File('test_assets/plant_test2.jpg');
+    final File imageFile = File('test_assets/plant_test3.jpg');
     if (!await imageFile.exists()) {
       print('ERREUR: L\'image de test n\'existe pas.');
       return;

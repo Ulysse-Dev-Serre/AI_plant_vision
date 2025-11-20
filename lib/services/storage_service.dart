@@ -1,48 +1,49 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import '../models/plant.dart';
 
 /// PROVIDER : Service responsable de la persistance des données
-/// Ce service fournit l'accès à la base de données (Firestore) et au stockage de fichiers (Storage).
+/// Ce service fournit l'accès à la base de données (Firestore) et au stockage de fichiers LOCAL.
 class StorageService {
-  // Instances Firebase (Singleton)
+  // Instance Firestore (Base de données partagée)
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
 
   // Nom de la collection dans Firestore
   static const String collectionName = 'plantes';
 
-  /// Sauvegarde une nouvelle plante (Image + Données)
-  /// Action complexe qui enchaîne Upload Image -> Récupération URL -> Sauvegarde BDD
-  Future<void> sauvegarderPlante(String nom, File imageFile) async {
+  /// Sauvegarde une nouvelle plante (Image Locale + Données Cloud)
+  /// 1. Copie l'image dans un dossier permanent du téléphone
+  /// 2. Sauvegarde les infos (dont le chemin local) dans Firestore
+  Future<void> sauvegarderPlante(String nom, String description, File imageFile) async {
     try {
-      String fileName = path.basename(imageFile.path);
-      String storagePath = 'plantes_images/${DateTime.now().millisecondsSinceEpoch}_$fileName';
-
-      // 1. Upload de l'image vers Firebase Storage
-      TaskSnapshot snapshot = await _storage.ref(storagePath).putFile(imageFile);
+      // 1. Sauvegarde LOCALE de l'image
+      // On récupère le dossier permanent de l'application
+      final directory = await getApplicationDocumentsDirectory();
+      final String fileName = '${DateTime.now().millisecondsSinceEpoch}_${path.basename(imageFile.path)}';
+      final String localPath = path.join(directory.path, fileName);
       
-      // 2. Récupération de l'URL de téléchargement
-      String downloadUrl = await snapshot.ref.getDownloadURL();
+      // On copie l'image du cache vers le stockage permanent
+      await imageFile.copy(localPath);
+      print("Image sauvegardée localement : $localPath");
 
-      // 3. Création de l'objet Plant
-      // On utilise .doc() vide pour générer un ID automatique
+      // 2. Création de l'objet Plant
       DocumentReference docRef = _firestore.collection(collectionName).doc();
       
       Plant nouvellePlante = Plant(
         id: docRef.id,
         nom: nom,
-        imagePath: imageFile.path, // Chemin local (pour affichage immédiat si besoin)
-        imageUrl: downloadUrl,     // URL Cloud (pour affichage distant/partagé)
+        description: description, // On sauvegarde la description
+        imagePath: localPath,
+        imageUrl: null,
         date: DateTime.now(),
       );
 
-      // 4. Sauvegarde dans Firestore
+      // 3. Sauvegarde dans Firestore
       await docRef.set(nouvellePlante.toMap());
       
-      print("Plante sauvegardée avec succès ! ID: ${docRef.id}");
+      print("Plante sauvegardée avec succès dans Firestore ! ID: ${docRef.id}");
       
     } catch (e) {
       print("Erreur lors de la sauvegarde : $e");
@@ -71,5 +72,6 @@ class StorageService {
   /// Supprime une plante de l'historique 
   Future<void> supprimerPlante(String plantId) async {
      await _firestore.collection(collectionName).doc(plantId).delete();
+     // TODO: Idéalement, supprimer aussi le fichier local pour nettoyer
   }
 }

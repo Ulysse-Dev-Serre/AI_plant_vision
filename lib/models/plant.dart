@@ -3,13 +3,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Plant {
   final String id;
   final String nom;
+  final String description; // Noms communs ou description
   final String imagePath;
   final DateTime date;
-  final String? imageUrl; // URL de l'image stockée dans Firebase Storage
+  final String? imageUrl; // URL de l'image stockée dans Firebase Storage (Optionnel si local)
 
   Plant({
     required this.id,
     required this.nom,
+    this.description = '', // Vide par défaut
     required this.imagePath,
     required this.date,
     this.imageUrl,
@@ -19,6 +21,7 @@ class Plant {
   Map<String, dynamic> toMap() {
     return {
       'nom': nom,
+      'description': description,
       'imagePath': imagePath,
       'date': Timestamp.fromDate(date),
       'imageUrl': imageUrl,
@@ -30,6 +33,7 @@ class Plant {
     return Plant(
       id: id,
       nom: map['nom'] ?? '',
+      description: map['description'] ?? '',
       imagePath: map['imagePath'] ?? '',
       date: (map['date'] as Timestamp).toDate(),
       imageUrl: map['imageUrl'],
