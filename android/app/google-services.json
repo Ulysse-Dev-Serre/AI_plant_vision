@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "229641290378",
+    "project_id": "vision-plante-dec0b",
+    "storage_bucket": "vision-plante-dec0b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:229641290378:android:5739fd29237da9a8f3a373",
+        "android_client_info": {
+          "package_name": "com.example.vision_plante"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-91O91ipdxVSZvQdE9JaG_czQaZy_0nw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
