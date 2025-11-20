@@ -1,31 +1,48 @@
-// ENSEMBLE - Modèle de données (à créer ensemble en 10 min)
-// Ce fichier définit la structure d'une plante
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Plant {
+  final String id;
   final String nom;
+  final String description; // Noms communs ou description
   final String imagePath;
   final DateTime date;
+  final String? imageUrl; // URL de l'image stockée dans Firebase Storage (Optionnel si local)
 
   Plant({
+    required this.id,
     required this.nom,
+    this.description = '', // Vide par défaut
     required this.imagePath,
     required this.date,
+    this.imageUrl,
   });
 
-  // TODO ENSEMBLE: Ajouter fromJson et toJson pour la sauvegarde
-  Map<String, dynamic> toJson() {
+  // Convertir un objet Plant en Map pour Firestore
+  Map<String, dynamic> toMap() {
     return {
       'nom': nom,
+      'description': description,
       'imagePath': imagePath,
-      'date': date.toIso8601String(),
+      'date': Timestamp.fromDate(date),
+      'imageUrl': imageUrl,
     };
   }
 
-  factory Plant.fromJson(Map<String, dynamic> json) {
+  // Créer un objet Plant à partir d'un document Firestore
+  factory Plant.fromMap(Map<String, dynamic> map, String id) {
     return Plant(
-      nom: json['nom'],
-      imagePath: json['imagePath'],
-      date: DateTime.parse(json['date']),
+      id: id,
+      nom: map['nom'] ?? '',
+      description: map['description'] ?? '',
+      imagePath: map['imagePath'] ?? '',
+      date: (map['date'] as Timestamp).toDate(),
+      imageUrl: map['imageUrl'],
     );
+  }
+  
+  // Pour l'affichage et le debug
+  @override
+  String toString() {
+    return 'Plant{id: $id, nom: $nom, date: $date}';
   }
 }

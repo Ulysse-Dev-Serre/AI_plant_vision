@@ -1,36 +1,77 @@
-// PERSONNE B - Service de sauvegarde Firebase
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import '../models/plant.dart';
-// TODO PERSONNE B: Importer Firebase après configuration
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firebase_storage/firebase_storage.dart';
 
+/// PROVIDER : Service responsable de la persistance des données
+/// Ce service fournit l'accès à la base de données (Firestore) et au stockage de fichiers LOCAL.
 class StorageService {
-  // TODO PERSONNE B: Implémenter cette fonction
-  // Cette fonction sauvegarde une plante dans Firebase
-  Future<void> sauvegarderPlante(String nom, File image) async {
-    // 1. Uploader l'image dans Firebase Storage
-    // 2. Récupérer l'URL de l'image uploadée
-    // 3. Créer un objet Plant avec l'URL
-    // 4. Sauvegarder dans Firestore (collection 'plants')
-    
-    throw UnimplementedError('À implémenter par Personne B');
+  // Instance Firestore (Base de données partagée)
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Nom de la collection dans Firestore
+  static const String collectionName = 'plantes';
+
+  /// Sauvegarde une nouvelle plante (Image Locale + Données Cloud)
+  /// 1. Copie l'image dans un dossier permanent du téléphone
+  /// 2. Sauvegarde les infos (dont le chemin local) dans Firestore
+  Future<void> sauvegarderPlante(String nom, String description, File imageFile) async {
+    try {
+      // 1. Sauvegarde LOCALE de l'image
+      // On récupère le dossier permanent de l'application
+      final directory = await getApplicationDocumentsDirectory();
+      final String fileName = '${DateTime.now().millisecondsSinceEpoch}_${path.basename(imageFile.path)}';
+      final String localPath = path.join(directory.path, fileName);
+      
+      // On copie l'image du cache vers le stockage permanent
+      await imageFile.copy(localPath);
+      print("Image sauvegardée localement : $localPath");
+
+      // 2. Création de l'objet Plant
+      DocumentReference docRef = _firestore.collection(collectionName).doc();
+      
+      Plant nouvellePlante = Plant(
+        id: docRef.id,
+        nom: nom,
+        description: description, // On sauvegarde la description
+        imagePath: localPath,
+        imageUrl: null,
+        date: DateTime.now(),
+      );
+
+      // 3. Sauvegarde dans Firestore
+      await docRef.set(nouvellePlante.toMap());
+      
+      print("Plante sauvegardée avec succès dans Firestore ! ID: ${docRef.id}");
+      
+    } catch (e) {
+      print("Erreur lors de la sauvegarde : $e");
+      throw Exception("Impossible de sauvegarder la plante");
+    }
   }
 
-  // TODO PERSONNE B: Implémenter cette fonction
-  // Cette fonction récupère toutes les plantes depuis Firebase
+  /// Récupère l'historique complet des plantes scannées
+  /// Retourne un [Future] contenant la liste des plantes (Data Provider)
   Future<List<Plant>> getHistorique() async {
-    // 1. Lire la collection 'plants' dans Firestore
-    // 2. Convertir les documents en List<Plant>
-    // 3. Retourner la liste triée par date
-    
-    throw UnimplementedError('À implémenter par Personne B');
-  }
+    try {
+      QuerySnapshot snapshot = await _firestore
+          .collection(collectionName)
+          .orderBy('date', descending: true) // Les plus récentes en premier
+          .get();
 
-  // TODO PERSONNE B: Bonus - Fonction pour supprimer une plante
-  Future<void> supprimerPlante(Plant plant) async {
-    // 1. Supprimer le document dans Firestore
-    // 2. Supprimer l'image dans Firebase Storage
-    throw UnimplementedError('Optionnel - À implémenter par Personne B');
+      return snapshot.docs.map((doc) {
+        return Plant.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+      }).toList();
+    } catch (e) {
+      print("Erreur lors de la récupération de l'historique : $e");
+      return [];
+    }
+  }
+  
+  /// Supprime une plante de l'historique 
+  Future<void> supprimerPlante(String plantId) async {
+     await _firestore.collection(collectionName).doc(plantId).delete();
+     // TODO: Idéalement, supprimer aussi le fichier local pour nettoyer
   }
 }
