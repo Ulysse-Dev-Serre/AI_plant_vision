@@ -34,8 +34,8 @@ class VisionPlanteApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      // ECRAN DE TEST FINAL - INTEGRATION COMPLETE
-      home: const TestFullIntegrationScreen(), 
+      // Point d'entrée principal de l'application
+      home: const CameraScreen(), 
     );
   }
 }
