@@ -22,11 +22,44 @@ class _HistoryScreenState extends State<HistoryScreen> {
     _chargerHistorique();
   }
 
-  // TODO PERSONNE A: Fonction pour charger l'historique
+  // Fonction pour charger l'historique
   Future<void> _chargerHistorique() async {
-    // Appeler _storageService.getHistorique()
-    // Mettre à jour _plants et _isLoading à false
-    // Ne pas oublier setState
+    try {
+      final plants = await _storageService.getHistorique();
+      if (mounted) {
+        setState(() {
+          _plants = plants;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors du chargement de l\'historique: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _supprimerPlante(String id) async {
+    try {
+      await _storageService.supprimerPlante(id);
+      _chargerHistorique(); // Recharger la liste
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Plante supprimée')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de la suppression: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -43,14 +76,53 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   itemCount: _plants.length,
                   itemBuilder: (context, index) {
                     final plant = _plants[index];
-                    
-                    // TODO PERSONNE A: Créer une Card pour afficher chaque plante
-                    // - leading: Image.file (50x50)
-                    // - title: nom de la plante
-                    // - subtitle: date (jour/mois/année)
-                    // - trailing: IconButton delete (optionnel)
-                    
-                    return Container(); // Remplacer par votre Card
+                    final file = File(plant.imagePath);
+                    final bool fileExists = file.existsSync();
+
+                    return Card(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: ListTile(
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: fileExists
+                              ? Image.file(
+                                  file,
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                )
+                              : Container(
+                                  width: 50,
+                                  height: 50,
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.image_not_supported, size: 30),
+                                ),
+                        ),
+                        title: Text(
+                          plant.nom,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (plant.description.isNotEmpty)
+                              Text(
+                                plant.description,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            Text(
+                              "${plant.date.day}/${plant.date.month}/${plant.date.year}",
+                              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                            ),
+                          ],
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _supprimerPlante(plant.id),
+                        ),
+                      ),
+                    );
                   },
                 ),
     );

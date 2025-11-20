@@ -41,13 +41,18 @@ class StorageService {
       );
 
       // 3. Sauvegarde dans Firestore
+      print("Tentative de sauvegarde Firestore...");
+      print("Collection: $collectionName");
+      print("Données: ${nouvellePlante.toMap()}");
+      
       await docRef.set(nouvellePlante.toMap());
       
-      print("Plante sauvegardée avec succès dans Firestore ! ID: ${docRef.id}");
+      print("✅ SUCCÈS : Plante sauvegardée dans Firestore ! ID: ${docRef.id}");
       
-    } catch (e) {
-      print("Erreur lors de la sauvegarde : $e");
-      throw Exception("Impossible de sauvegarder la plante");
+    } catch (e, stackTrace) {
+      print("❌ ERREUR GRAVE lors de la sauvegarde : $e");
+      print("Stacktrace: $stackTrace");
+      throw Exception("Impossible de sauvegarder la plante: $e");
     }
   }
 
