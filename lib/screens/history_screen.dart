@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/plant.dart';
 import '../services/storage_service.dart';
 import 'dart:io';
+import '../utils/app_logger.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({Key? key}) : super(key: key);
@@ -24,6 +25,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   // Fonction pour charger l'historique
   Future<void> _chargerHistorique() async {
+    AppLogger.debug("Chargement écran Historique");
     try {
       final plants = await _storageService.getHistorique();
       if (mounted) {
@@ -33,6 +35,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         });
       }
     } catch (e) {
+      AppLogger.error("Erreur chargement historique UI", e);
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -54,6 +57,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         );
       }
     } catch (e) {
+      AppLogger.error("Erreur suppression plante UI", e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur lors de la suppression: $e')),

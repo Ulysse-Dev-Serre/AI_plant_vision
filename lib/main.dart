@@ -10,16 +10,20 @@ import 'screens/camera_screen.dart';
 import 'screens/history_screen.dart';
 import 'services/storage_service.dart';
 import 'services/vision_api.dart';
+import 'utils/app_logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Chargement des variables d'environnement
   await dotenv.load(fileName: ".env");
+  AppLogger.info("Variables d'environnement chargées");
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  AppLogger.success("Firebase initialisé");
+  
   runApp(const VisionPlanteApp());
 }
 

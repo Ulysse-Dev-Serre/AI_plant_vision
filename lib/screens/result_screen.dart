@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import '../services/storage_service.dart';
 import 'camera_screen.dart'; // Pour la navigation "Nouvelle analyse"
+import '../utils/app_logger.dart';
 
 class ResultScreen extends StatelessWidget {
   final String nomPlante;
@@ -19,6 +20,8 @@ class ResultScreen extends StatelessWidget {
   // Fonction pour sauvegarder la plante
   Future<void> _sauvegarder(BuildContext context) async {
     try {
+      AppLogger.info("Clic bouton Sauvegarder - Plante: $nomPlante");
+      
       final storageService = StorageService();
       await storageService.sauvegarderPlante(nomPlante, description, image);
       
@@ -30,6 +33,7 @@ class ResultScreen extends StatelessWidget {
         Navigator.pop(context);
       }
     } catch (e) {
+      AppLogger.error("Erreur UI lors de la sauvegarde", e);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur lors de la sauvegarde : $e')),

@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import '../models/plant.dart';
+import '../utils/app_logger.dart';
 
 /// PROVIDER : Service responsable de la persistance des données
 /// Ce service fournit l'accès à la base de données (Firestore) et au stockage de fichiers LOCAL.
@@ -26,7 +27,7 @@ class StorageService {
       
       // On copie l'image du cache vers le stockage permanent
       await imageFile.copy(localPath);
-      print("Image sauvegardée localement : $localPath");
+      AppLogger.file('Image sauvegardée localement', localPath);
 
       // 2. Création de l'objet Plant
       DocumentReference docRef = _firestore.collection(collectionName).doc();
@@ -41,17 +42,19 @@ class StorageService {
       );
 
       // 3. Sauvegarde dans Firestore
-      print("Tentative de sauvegarde Firestore...");
-      print("Collection: $collectionName");
-      print("Données: ${nouvellePlante.toMap()}");
+      AppLogger.firestore(
+        'Tentative de sauvegarde', 
+        collection: collectionName, 
+        docId: docRef.id, 
+        data: nouvellePlante.toMap()
+      );
       
       await docRef.set(nouvellePlante.toMap());
       
-      print("✅ SUCCÈS : Plante sauvegardée dans Firestore ! ID: ${docRef.id}");
+      AppLogger.success('Plante sauvegardée dans Firestore ! ID: ${docRef.id}');
       
     } catch (e, stackTrace) {
-      print("❌ ERREUR GRAVE lors de la sauvegarde : $e");
-      print("Stacktrace: $stackTrace");
+      AppLogger.error('Impossible de sauvegarder la plante', e, stackTrace);
       throw Exception("Impossible de sauvegarder la plante: $e");
     }
   }
@@ -60,23 +63,35 @@ class StorageService {
   /// Retourne un [Future] contenant la liste des plantes (Data Provider)
   Future<List<Plant>> getHistorique() async {
     try {
+      AppLogger.info('Récupération de l\'historique...');
+
       QuerySnapshot snapshot = await _firestore
           .collection(collectionName)
           .orderBy('date', descending: true) // Les plus récentes en premier
           .get();
 
-      return snapshot.docs.map((doc) {
+      final plants = snapshot.docs.map((doc) {
         return Plant.fromMap(doc.data() as Map<String, dynamic>, doc.id);
       }).toList();
+      
+      AppLogger.success('${plants.length} plantes récupérées');
+      return plants;
     } catch (e) {
-      print("Erreur lors de la récupération de l'historique : $e");
+      AppLogger.error('Erreur lors de la récupération de l\'historique', e);
       return [];
     }
   }
   
   /// Supprime une plante de l'historique 
   Future<void> supprimerPlante(String plantId) async {
-     await _firestore.collection(collectionName).doc(plantId).delete();
-     // TODO: Idéalement, supprimer aussi le fichier local pour nettoyer
+     try {
+       AppLogger.info('Suppression de la plante $plantId');
+       await _firestore.collection(collectionName).doc(plantId).delete();
+       AppLogger.success('Plante supprimée');
+       // TODO: Idéalement, supprimer aussi le fichier local pour nettoyer
+     } catch (e) {
+       AppLogger.error('Erreur lors de la suppression', e);
+       rethrow;
+     }
   }
 }
