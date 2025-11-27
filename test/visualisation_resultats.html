@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résultats Vision Plante API</title>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --bg: #f4f7f4;
+            --card-bg: #ffffff;
+            --text: #333;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+        .meta-info {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+        }
+        .suggestion-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            border-left: 6px solid transparent;
+            transition: transform 0.2s;
+        }
+        .suggestion-card:hover {
+            transform: translateY(-2px);
+        }
+        .suggestion-card.top-match {
+            border-left-color: var(--primary);
+        }
+        .card-header {
+            background: #e8f5e9;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+        .plant-name {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .probability {
+            background: var(--primary);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .card-content {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .details h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+            color: #555;
+        }
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .images-grid img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+        }
+        .images-grid img:hover {
+            opacity: 0.9;
+        }
+        .common-names span {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        .wiki-desc {
+            font-size: 0.95em;
+            color: #444;
+            background: #f9f9f9;
+            padding: 10px;
+            border-left: 3px solid #ccc;
+            margin-top: 10px;
+        }
+        .care-info {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .care-item {
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+        .care-item strong {
+            display: block;
+            color: #e65100;
+        }
+        .raw-json {
+            margin-top: 50px;
+            background: #2d2d2d;
+            color: #ccc;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: monospace;
+            white-space: pre;
+        }
+        .toggle-json {
+            text-align: center;
+            margin-top: 20px;
+            cursor: pointer;
+            color: #666;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🌿 Résultat Analyse Vision Plante</h1>
+
+    <div class="meta-info" id="metaInfo">
+        <!-- Info générale -->
+    </div>
+
+    <div id="suggestionsList">
+        <!-- Les cartes seront générées ici -->
+    </div>
+
+    <div class="toggle-json" onclick="document.getElementById('rawJson').style.display = document.getElementById('rawJson').style.display === 'none' ? 'block' : 'none'">
+        Voir/Cacher le JSON brut
+    </div>
+    <div id="rawJson" class="raw-json" style="display:none;"></div>
+</div>
+
+<script>
+    // LES DONNÉES JSON BRUTES (Collées ici)
+    const apiData = {
+  "id": 1056867230,
+  "custom_id": null,
+  "meta_data": {
+    "latitude": null,
+    "longitude": null,
+    "date": "2025-11-24",
+    "datetime": "2025-11-24"
+  },
+  "uploaded_datetime": 1763996384.792169,
+  "finished_datetime": 1763996385.040078,
+  "images": [
+    {
+      "file_name": "4e1b1280e9ae4299b7d872e659f54d66.jpg",
+      "url": "https://plant.id/media/imgs/4e1b1280e9ae4299b7d872e659f54d66.jpg"
+    }
+  ],
+  "suggestions": [
+    {
+      "id": 105686723000,
+      "plant_name": "Verbascum boerhavii",
+      "probability": 0.6626,
+      "confirmed": false,
+      "similar_images": [
+        {
+          "id": "a0c13bffcfb28dc9ed2ee501523ee890bab6a237",
+          "url": "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/a0c/13bffcfb28dc9ed2ee501523ee890bab6a237.jpeg",
+          "license_name": "CC BY 4.0",
+          "license_url": "https://creativecommons.org/licenses/by/4.0/",
+          "citation": "morena ferrari",
+          "similarity": 0.797,
+          "url_small": "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/a0c/13bffcfb28dc9ed2ee501523ee890bab6a237.small.jpeg"
+        },
+        {
+          "id": "1afc87473593e48d4428e481ebb40062ffca7dd2",
+          "url": "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/1af/c87473593e48d4428e481ebb40062ffca7dd2.jpeg",
+          "license_name": "CC BY 4.0",
+          "license_url": "https://creativecommons.org/licenses/by/4.0/",
+          "citation": "Denis Schmitt",
+          "similarity": 0.755,
+          "url_small": "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/1af/c87473593e48d4428e481ebb40062ffca7dd2.small.jpeg"
+        }
+      ],
+      "plant_details": {
+        "common_names": [
+          "annual mullein"
+        ],
+        "taxonomy": {
+          "class": "Magnoliopsida",
+          "genus": "Verbascum",
+          "order": "Lamiales",
+          "family": "Scrophulariaceae",
+          "phylum": "Tracheophyta",
+          "kingdom": "Plantae"
+        },
+        "url": "https://en.wikipedia.org/wiki/Verbascum_boerhavii",
+        "gbif_id": "8309638",
+        "wiki_description": {
+          "value": "Verbascum boerhavii, the annual mullein, is a species of flowering plant in the family Scrophulariaceae, native to Spain (including the Balearic Islands), France (including Corsica), and Italy. It has been traditionally used as a treatment for haemorrhoids. It contains the phenylpropanoid glycoside poliumoside, which has an affinity for metalloproteinases.",
+          "citation": "https://en.wikipedia.org/wiki/Verbascum_boerhavii",
+          "license_name": "CC BY-SA 3.0",
+          "license_url": "https://creativecommons.org/licenses/by-sa/3.0/"
+        },
+        "synonyms": [
+          "Lychnitis boerhavii",
+          "Verbascum bicolor",
+          "Verbascum elongatum",
+          "Verbascum luteum",
+          "Verbascum majale",
+          "Verbascum majale var. bicolor",
+          "Verbascum majale var. lanceolatum",
+          "Verbascum phlomoides",
+          "Verbascum rotundifolium"
+        ],
+        "edible_parts": null,
+        "watering": null,
+        "propagation_methods": null,
+        "best_light_condition": "This plant thrives in full sun to partial shade. It needs at least six hours of direct sunlight each day to grow well. If grown indoors, place it near a south-facing window where it can receive ample light. In areas with intense afternoon sun, some light shade can help prevent the leaves from scorching.",
+        "best_soil_type": "The plant grows best in well-draining soil. A sandy or loamy soil mix is ideal, as it allows for good drainage and prevents root rot. Adding organic matter like compost can improve soil fertility and structure. Avoid heavy clay soils that retain too much water, as this can lead to poor growth and disease.",
+        "common_uses": "Commonly, this plant is used for ornamental purposes due to its attractive flowers and foliage. Gardeners often plant it in borders, rock gardens, and wildflower meadows. Additionally, it has been used in traditional herbal medicine, where extracts from its leaves and flowers are believed to have therapeutic benefits. Some people also use it in dried flower arrangements for its aesthetic appeal.",
+        "cultural_significance": "In some cultures, this plant holds significant value. It has been used in traditional medicine for its potential healing properties. People have utilized various parts of the plant in remedies for ailments such as respiratory issues and skin conditions. Its presence in gardens and natural landscapes can also symbolize resilience and adaptability.",
+        "toxicity": "This plant is generally non-toxic to humans and animals. There are no known harmful effects if touched or ingested. However, it's always a good practice to keep all plants out of reach of pets and children to prevent any accidental ingestion.",
+        "best_watering": "For optimal growth, water the plant regularly but avoid overwatering. It prefers soil that is kept consistently moist but not waterlogged. During the growing season, water it more frequently, ensuring the soil remains damp. In the winter months, reduce watering as the plant's growth slows down. Always check the top inch of soil; if it feels dry, it's time to water.",
+        "language": "en",
+        "scientific_name": "Verbascum boerhavii",
+        "structured_name": {
+          "genus": "verbascum",
+          "species": "boerhavii"
+        }
+      }
+    },
+    {
+      "id": 105686723001,
+      "plant_name": "Verbascum thapsus",
+      "probability": 0.2893,
+      "confirmed": false,
+      "similar_images": [
+        {
+          "id": "4033049f9d1c13ee56756324bc2b00fcb06eda39",
+          "url": "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/403/3049f9d1c13ee56756324bc2b00fcb06eda39.jpeg",
+          "license_name": "CC BY-NC-SA 4.0",
+          "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+          "citation": "FlowerChecker s.r.o.",
+          "similarity": 0.728,
+          "url_small": "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/403/3049f9d1c13ee56756324bc2b00fcb06eda39.small.jpeg"
+        },
+        {
+          "id": "f04f14d825fa7ae4d6d708dd459217576f41b23b",
+          "url": "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/f04/f14d825fa7ae4d6d708dd459217576f41b23b.jpeg",
+          "license_name": "CC BY-NC-SA 4.0",
+          "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+          "citation": "FlowerChecker s.r.o.",
+          "similarity": 0.698,
+          "url_small": "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/f04/f14d825fa7ae4d6d708dd459217576f41b23b.small.jpeg"
+        }
+      ],
+      "plant_details": {
+        "common_names": [
+          "Great Mullein",
+          "common mullein",
+          "woolly mullein",
+          "flannel mullein",
+          "cowboy's toilet paper",
+          "toilet paper plant",
+          "Charmin of the woods",
+          "fisherman's friend",
+          "camper's helper",
+          "Flannelleaf",
+          "Velvet-Dock"
+        ],
+        "taxonomy": {
+          "class": "Magnoliopsida",
+          "genus": "Verbascum",
+          "order": "Lamiales",
+          "family": "Scrophulariaceae",
+          "phylum": "Tracheophyta",
+          "kingdom": "Plantae"
+        },
+        "url": "https://en.wikipedia.org/wiki/Verbascum_thapsus",
+        "gbif_id": "3171949",
+        "wiki_description": {
+          "value": "Verbascum thapsus, the great mullein, greater mullein or common mullein, is a species of mullein native to Europe, northern Africa, and Asia, and introduced in the Americas, Australia and New Zealand.\nIt is a hairy biennial plant that can grow to 2 m tall or more. Its small, yellow flowers are densely grouped on a tall stem, which grows from a large rosette of leaves. It grows in a wide variety of habitats, but prefers well-lit, disturbed soils, where it can appear soon after the ground receives light, from long-lived seeds that persist in the soil seed bank. It is a common weedy plant that spreads by prolifically producing seeds, and has become invasive in temperate world regions. It is a minor problem for most agricultural crops, since it is not a competitive species, being intolerant of shade from other plants and unable to survive tilling. It also hosts many insects, some of which can be harmful to other plants. Although individuals are easy to remove by hand, populations are difficult to eliminate permanently.\nAlthough commonly used in traditional medicine, no approved drugs are made from this plant. It has been used to make dyes and torches.",
+          "citation": "https://en.wikipedia.org/wiki/Verbascum_thapsus",
+          "license_name": "CC BY-SA 3.0",
+          "license_url": "https://creativecommons.org/licenses/by-sa/3.0/"
+        },
+        "synonyms": [
+          "Verbascum bicolle",
+          "Verbascum indicum",
+          "Verbascum linnaei",
+          "Verbascum simplex subsp. valentinum",
+          "Verbascum simplex var. dyris",
+          "Verbascum subviride",
+          "Verbascum tapsus",
+          "Verbascum thapsum",
+          "Verbascum thapsus subsp. langei",
+          "Verbascum thapsus var. australe",
+          "Verbascum thapsus var. boreale",
+          "Verbascum thapsus var. bracteatum",
+          "Verbascum thapsus var. glabrum",
+          "Verbascum thapsus var. gymnostemon",
+          "Verbascum thapsus var. intermedium",
+          "Verbascum thapsus var. subviride"
+        ],
+        "edible_parts": null,
+        "watering": {
+          "max": 2,
+          "min": 1
+        },
+        "propagation_methods": null,
+        "best_light_condition": "This plant thrives in full sunlight. It needs at least six hours of direct sunlight each day to grow well. While it can tolerate partial shade, too little light can result in leggy growth and fewer flowers. Plant it in a location where it can receive ample sunlight throughout the day for the best results.",
+        "best_soil_type": "The plant grows best in well-drained soil. It can tolerate a range of soil types, including sandy, loamy, and even rocky soils, as long as there is good drainage. Poorly drained soils can cause root problems. Adding organic matter like compost can improve soil structure and fertility, promoting healthier growth.",
+        "common_uses": "Common uses of this plant include medicinal applications and ornamental purposes. Traditionally, it has been used to treat respiratory issues, skin conditions, and inflammation. The leaves and flowers are often used to make herbal teas and extracts. Additionally, its tall, flowering stalks make it a popular choice for adding height and visual interest to garden beds and borders.",
+        "cultural_significance": "Historically, this plant has held cultural significance in various societies. In some cultures, it was used in traditional medicine for its purported healing properties. It has also been used in rituals and as a symbol in folklore. Its tall, striking appearance has made it a notable plant in gardens and natural landscapes.",
+        "toxicity": "This plant is generally considered non-toxic to humans and animals. However, some people may experience skin irritation or allergic reactions when handling the plant. It's always a good idea to wear gloves when working with it. While it is not known to be harmful if ingested, it's best to keep it out of reach of pets and children to avoid any potential issues.",
+        "best_watering": "For optimal growth, water the plant moderately. It prefers soil that is kept slightly moist but not waterlogged. Overwatering can lead to root rot, so it's important to let the soil dry out between waterings. During dry spells or hot weather, increase the frequency of watering to ensure the plant doesn't dry out completely. However, in cooler months, reduce watering to prevent excess moisture.",
+        "language": "en",
+        "scientific_name": "Verbascum thapsus",
+        "structured_name": {
+          "genus": "verbascum",
+          "species": "thapsus"
+        }
+      }
+    },
+    {
+      "id": 105686723002,
+      "plant_name": "Verbascum pulverulentum",
+      "probability": 0.0176,
+      "confirmed": false,
+      "similar_images": [
+        {
+          "id": "baf74e7a43670a50b382e8ad6e0adfb7828eee78",
+          "url": "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/baf/74e7a43670a50b382e8ad6e0adfb7828eee78.jpeg",
+          "license_name": "CC BY 4.0",
+          "license_url": "https://creativecommons.org/licenses/by/4.0/",
+          "citation": "Carine Siceaux Planche",
+          "similarity": 0.642,
+          "url_small": "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/baf/74e7a43670a50b382e8ad6e0adfb7828eee78.small.jpeg"
+        },
+        {
+          "id": "31c36ecabc3c5b0d396fdb6145f29f1de7e9e6cb",
+          "url": "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/31c/36ecabc3c5b0d396fdb6145f29f1de7e9e6cb.jpeg",
+          "license_name": "CC BY 4.0",
+          "license_url": "https://creativecommons.org/licenses/by/4.0/",
+          "citation": "Xavier Gironés",
+          "similarity": 0.642,
+          "url_small": "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/31c/36ecabc3c5b0d396fdb6145f29f1de7e9e6cb.small.jpeg"
+        }
+      ],
+      "plant_details": {
+        "common_names": [
+          "broad-leaf mullein",
+          "violetstamen mullein",
+          "Hoary Mullein"
+        ],
+        "taxonomy": {
+          "class": "Magnoliopsida",
+          "genus": "Verbascum",
+          "order": "Lamiales",
+          "family": "Scrophulariaceae",
+          "phylum": "Tracheophyta",
+          "kingdom": "Plantae"
+        },
+        "url": "https://en.wikipedia.org/wiki/Verbascum_pulverulentum",
+        "gbif_id": "3171941",
+        "wiki_description": {
+          "value": "Verbascum pulverulentum, the hoary mullein, is a species of flowering plant in the family Scrophulariaceae. It is native to western, central and southern Europe north to England (where its main range is in East Anglia) and southern Wales. It has been introduced to Austria, Madeira, and Washington state in the USA. It is a specialist on coastal shingle, and so is preadapted to human-influenced habitats such as old quarries and gravel pits, road verges, railway embankments, and similar disturbed stony ground.\nIt is a stout biennial or monocarpic perennial herb growing up to 1.5 m tall, producing flowers and seeds only once, during its second or a later year. The stems and leaves are densely woolly with pale grey to glaucous pubescence. The flowers are yellow, 18–25 mm diameter, with 5 orange stamens, all the stamen stems with dense white hairs. It can best be distinguished from the similar great mullein (V. thapsus) in all five stamens having dense white hairs on the stem; in V. thapsus, the lower two of the five stamens are hairless or only thinly hairy.\nIt is the main food plant for the moth Nothris verbascella (Norfolk snout).",
+          "citation": "https://en.wikipedia.org/wiki/Verbascum_pulverulentum",
+          "license_name": "CC BY-SA 3.0",
+          "license_url": "https://creativecommons.org/licenses/by-sa/3.0/"
+        },
+        "synonyms": [
+          "Lychnitis pulverulenta",
+          "Thapsus floccosum",
+          "Thapsus pulverulentum",
+          "Verbascum acutifolium",
+          "Verbascum farinosum",
+          "Verbascum floccosum",
+          "Verbascum floccosum subsp. pulverulentum",
+          "Verbascum floccosum var. gymnostemon",
+          "Verbascum floccosum var. heterophyllum",
+          "Verbascum floccosum var. pulverulentum",
+          "Verbascum haemorrhoidale",
+          "Verbascum heterophyllum",
+          "Verbascum laxiflorum",
+          "Verbascum lychnitis var. pulverulentum",
+          "Verbascum phlomoides",
+          "Verbascum pulvinatum"
+        ],
+        "edible_parts": null,
+        "watering": null,
+        "propagation_methods": null,
+        "best_light_condition": "This plant thrives in full sun conditions. It needs at least six hours of direct sunlight each day to grow well. If grown indoors, place it near a south-facing window where it can receive ample light. In areas with very hot climates, some afternoon shade can help prevent the leaves from scorching. However, too much shade can result in leggy growth and fewer flowers.",
+        "best_soil_type": "The ideal soil for this plant is well-draining and slightly alkaline. Sandy or loamy soils are best, as they allow for good drainage and root development. Heavy clay soils should be amended with organic matter or sand to improve drainage. The plant is quite adaptable and can tolerate poor soil conditions, but it will perform best in nutrient-rich environments.",
+        "common_uses": "Common uses for this plant include ornamental gardening and traditional medicine. Gardeners appreciate its tall, spiky flowers and silvery foliage, which add visual interest to flower beds and borders. In herbal medicine, extracts from the plant have been used to make teas, poultices, and salves. These remedies are believed to help with coughs, colds, and skin irritations. Additionally, the plant can be used in dried flower arrangements due to its long-lasting blooms.",
+        "cultural_significance": "Historically, this plant has been used in various cultures for its medicinal properties. It has been employed in traditional remedies to treat respiratory issues, skin conditions, and inflammation. In some cultures, it is also considered a symbol of protection and healing. Its tall, striking appearance has made it a popular choice in ornamental gardens, often used to add height and texture.",
+        "toxicity": "This plant is generally considered non-toxic to both humans and animals. There are no known harmful effects if touched or ingested in small amounts. However, as with any plant, it's always a good idea to supervise pets and children to prevent them from eating large quantities, which could potentially cause digestive upset.",
+        "best_watering": "For optimal growth, this plant should be watered moderately. It prefers soil that is kept slightly moist but not waterlogged. Overwatering can lead to root rot, so it's important to let the top layer of soil dry out between waterings. During the growing season, water more frequently, but reduce the amount during the dormant winter months. Using a well-draining pot or garden bed can help prevent excess moisture buildup.",
+        "language": "en",
+        "scientific_name": "Verbascum pulverulentum",
+        "structured_name": {
+          "genus": "verbascum",
+          "species": "pulverulentum"
+        }
+      }
+    },
+    {
+      "id": 105686723003,
+      "plant_name": "Verbascum phlomoides",
+      "probability": 0.0152,
+      "confirmed": false,
+      "similar_images": [
+        {
+          "id": "40766e098736b4c3314395f31f8a9fde75f4d431",
+          "url": "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/407/66e098736b4c3314395f31f8a9fde75f4d431.jpeg",
+          "license_name": "CC BY 4.0",
+          "license_url": "https://creativecommons.org/licenses/by/4.0/",
+          "citation": "Olaf Beyer",
+          "similarity": 0.715,
+          "url_small": "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/407/66e098736b4c3314395f31f8a9fde75f4d431.small.jpeg"
+        },
+        {
+          "id": "453ec08b825df3e46186307d476bd43e9a8cb30d",
+          "url": "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/453/ec08b825df3e46186307d476bd43e9a8cb30d.jpeg",
+          "license_name": "CC BY-SA 4.0",
+          "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+          "citation": "Olimpia Andrea Vigh",
+          "similarity": 0.709,
+          "url_small": "https://plant-id.ams3.cdn.digitaloceanspaces.com/similar_images/5/453/ec08b825df3e46186307d476bd43e9a8cb30d.small.jpeg"
+        }
+      ],
+      "plant_details": {
+        "common_names": [
+          "orange mullein",
+          "pale yellow mullein"
+        ],
+        "taxonomy": {
+          "class": "Magnoliopsida",
+          "genus": "Verbascum",
+          "order": "Lamiales",
+          "family": "Scrophulariaceae",
+          "phylum": "Tracheophyta",
+          "kingdom": "Plantae"
+        },
+        "url": "https://en.wikipedia.org/wiki/Verbascum_phlomoides",
+        "gbif_id": "3171948",
+        "wiki_description": {
+          "value": "Verbascum phlomoides, the orange mullein, woolly mullein (which often refers to Verbascum thapsus), or clasping-leaf mullein, is a plant species in the family Scrophulariaceae native to Europe and Asia Minor. It is a widespread weed in North America. The Royal Horticultural Society considered it to be a good plant to attract pollinators. It is used as a respiratory catarrh and diuretic.",
+          "citation": "https://en.wikipedia.org/wiki/Verbascum_phlomoides",
+          "license_name": "CC BY-SA 3.0",
+          "license_url": "https://creativecommons.org/licenses/by-sa/3.0/"
+        },
+        "synonyms": [
+          "Flomosia condensata",
+          "Flomosia nemarosa",
+          "Flomosia phlomoides",
+          "Thapsus phlomoides",
+          "Verbascum argyrostachyon",
+          "Verbascum australe",
+          "Verbascum avarorum",
+          "Verbascum belasitzae",
+          "Verbascum boerhavii",
+          "Verbascum bohemicum",
+          "Verbascum bulgaricum",
+          "Verbascum calvescens",
+          "Verbascum condensatum",
+          "Verbascum crenatifolium",
+          "Verbascum foemina",
+          "Verbascum formanekii",
+          "Verbascum grandiflorum",
+          "Verbascum italicum",
+          "Verbascum jernacha",
+          "Verbascum macranthum",
+          "Verbascum montanum",
+          "Verbascum nemorosum",
+          "Verbascum phlomoides eramosum",
+          "Verbascum phlomoides subsp. australe",
+          "Verbascum phlomoides subsp. avarorum",
+          "Verbascum phlomoides var. amplexicaule",
+          "Verbascum phlomoides var. australe",
+          "Verbascum phlomoides var. avarorum",
+          "Verbascum phlomoides var. condensatum",
+          "Verbascum phlomoides var. denudatum",
+          "Verbascum phlomoides var. glabratum",
+          "Verbascum phlomoides var. glabrescens",
+          "Verbascum phlomoides var. kochii",
+          "Verbascum phlomoides var. linnaei",
+          "Verbascum phlomoides var. macranthum",
+          "Verbascum phlomoides var. nemorosum",
+          "Verbascum phlomoides var. semidecurrens",
+          "Verbascum pulverulentum",
+          "Verbascum pumilum",
+          "Verbascum rolletianum",
+          "Verbascum rugulosum",
+          "Verbascum sartori",
+          "Verbascum saxatile",
+          "Verbascum semidecurrens",
+          "Verbascum slavonicum",
+          "Verbascum ternacha",
+          "Verbascum thapsiforme subsp. phlomoides",
+          "Verbascum thapsoides",
+          "Verbascum thapsus var. subdecurrens",
+          "Verbascum tomentosum",
+          "Verbascum viminale"
+        ],
+        "edible_parts": null,
+        "watering": null,
+        "propagation_methods": null,
+        "best_light_condition": "This plant thrives in full sun, requiring at least six hours of direct sunlight each day. It can tolerate partial shade, but its growth and flowering may be less vigorous. Placing it in a location where it receives ample sunlight will ensure it develops strong stems and vibrant flowers. If grown indoors, a south-facing window is ideal to provide the necessary light conditions.",
+        "best_soil_type": "The plant prefers well-draining soil with a neutral to slightly alkaline pH. Sandy or loamy soils are ideal as they prevent water from pooling around the roots. Adding organic matter like compost can improve soil structure and fertility, promoting healthier growth. Avoid heavy clay soils that retain too much moisture, as this can lead to root rot and other issues.",
+        "common_uses": "Common uses of this plant include ornamental gardening, where it is valued for its tall spikes of yellow flowers that add vertical interest to garden beds and borders. It is also used in traditional herbal medicine, with its leaves and flowers being harvested for teas, tinctures, and poultices. Additionally, it can serve as a beneficial plant in pollinator gardens, attracting bees, butterflies, and other beneficial insects.",
+        "cultural_significance": "Historically, this plant has been used in various cultures for its medicinal properties. It has been employed in traditional remedies to treat respiratory issues, skin conditions, and inflammation. In some cultures, it is also associated with folklore and has been used in rituals and ceremonies. Its tall, striking appearance has made it a symbol of strength and resilience in various cultural contexts.",
+        "toxicity": "This plant is generally considered non-toxic to humans and animals. However, it is always best to exercise caution and prevent pets and children from ingesting any part of the plant. While it is not known to cause serious harm, some individuals may experience mild digestive discomfort if parts of the plant are consumed. Always consult a medical professional or veterinarian if ingestion occurs.",
+        "best_watering": "For optimal growth, water the plant regularly but avoid overwatering. It prefers soil that is kept consistently moist but not waterlogged. During dry spells, increase the frequency of watering to ensure the soil does not dry out completely. However, be cautious of root rot, which can occur if the plant sits in water for too long. A good practice is to water deeply and then allow the top inch of soil to dry out before watering again.",
+        "language": "en",
+        "scientific_name": "Verbascum phlomoides",
+        "structured_name": {
+          "genus": "verbascum",
+          "species": "phlomoides"
+        }
+      }
+    }
+  ],
+  "modifiers": [
+    "similar_images"
+  ],
+  "secret": "wtsxYfA8jXbcbla",
+  "fail_cause": null,
+  "countable": true,
+  "feedback": null,
+  "is_plant": true,
+  "is_plant_probability": 0.98278415
+};
+
+    // Initialisation et rendu
+    document.addEventListener('DOMContentLoaded', () => {
+        renderMetaInfo(apiData);
+        renderRawJson(apiData);
+        renderSuggestions(apiData.suggestions);
+    });
+
+    function renderMetaInfo(data) {
+        const meta = document.getElementById('metaInfo');
+        const isPlantProb = (data.is_plant_probability * 100).toFixed(1);
+        const date = data.meta_data.date;
+        
+        meta.innerHTML = `
+            <div><strong>Date:</strong> ${date}</div>
+            <div><strong>Probabilité que ce soit une plante:</strong> ${isPlantProb}%</div>
+            <div><strong>Images analysées:</strong> ${data.images.length}</div>
+        `;
+    }
+
+    function renderRawJson(data) {
+        document.getElementById('rawJson').textContent = JSON.stringify(data, null, 2);
+    }
+
+    function renderSuggestions(suggestions) {
+        const container = document.getElementById('suggestionsList');
+        
+        if (!suggestions || suggestions.length === 0) {
+            container.innerHTML = "<p>Aucune suggestion trouvée.</p>";
+            return;
+        }
+
+        suggestions.forEach((sugg, index) => {
+            const prob = (sugg.probability * 100).toFixed(1);
+            const isTop = index === 0 ? 'top-match' : '';
+            const details = sugg.plant_details || {};
+            const wiki = details.wiki_description || { value: 'Pas de description disponible.' };
+            
+            // Construction du HTML pour une carte
+            const html = `
+                <div class="suggestion-card ${isTop}">
+                    <div class="card-header">
+                        <div class="plant-name">${sugg.plant_name}</div>
+                        <div class="probability">${prob}% de confiance</div>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="visuals">
+                            <div class="images-grid">
+                                ${sugg.similar_images ? sugg.similar_images.slice(0, 2).map(img => 
+                                    `<a href="${img.url}" target="_blank"><img src="${img.url_small || img.url}" alt="Similar image"></a>`
+                                ).join('') : ''}
+                            </div>
+                            <p style="text-align:center; font-size:0.8em; color:#777;">Images similaires de référence</p>
+                        </div>
+
+                        <div class="details">
+                            <h3>Détails</h3>
+                            <div class="common-names">
+                                <strong>Noms communs:</strong><br>
+                                ${details.common_names ? details.common_names.map(n => `<span>${n}</span>`).join('') : 'Aucun'}
+                            </div>
+                            
+                            <div class="wiki-desc">
+                                <strong>Description Wiki:</strong><br>
+                                ${wiki.value.substring(0, 300)}... 
+                                <a href="${wiki.citation || details.url}" target="_blank">[Lire plus]</a>
+                            </div>
+
+                            <div class="care-info">
+                                ${details.best_light_condition ? `<div class="care-item"><strong>☀️ Lumière</strong>${details.best_light_condition.substring(0, 80)}...</div>` : ''}
+                                ${details.best_watering ? `<div class="care-item"><strong>💧 Arrosage</strong>${details.best_watering.substring(0, 80)}...</div>` : ''}
+                                ${details.toxicity ? `<div class="care-item"><strong>⚠️ Toxicité</strong>${details.toxicity}</div>` : ''}
+                                ${details.best_soil_type ? `<div class="care-item"><strong>🌱 Sol</strong>${details.best_soil_type.substring(0, 80)}...</div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        });
+    }
+</script>
+
+</body>
+</html>

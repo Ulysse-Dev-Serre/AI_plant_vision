@@ -9,6 +9,7 @@ import 'history_screen.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 import 'dart:convert'; // Pour lire le manifeste des assets
+import '../utils/app_logger.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({Key? key}) : super(key: key);
@@ -24,6 +25,8 @@ class _CameraScreenState extends State<CameraScreen> {
 
   // Fonction pour sélectionner une image (Caméra ou Galerie)
   Future<void> _selectionnerImage(ImageSource source) async {
+    AppLogger.debug("Ouverture du sélecteur d'image (${source == ImageSource.camera ? 'Caméra' : 'Galerie'})");
+    
     final picker = ImagePicker();
     try {
       final pickedFile = await picker.pickImage(
@@ -34,11 +37,15 @@ class _CameraScreenState extends State<CameraScreen> {
       );
 
       if (pickedFile != null) {
+        AppLogger.info("Image sélectionnée : ${pickedFile.path}");
         setState(() {
           _image = File(pickedFile.path);
         });
+      } else {
+        AppLogger.debug("Sélection d'image annulée par l'utilisateur");
       }
     } catch (e) {
+      AppLogger.error("Erreur lors de la sélection d'image", e);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur lors de la sélection: $e')),
@@ -51,12 +58,16 @@ class _CameraScreenState extends State<CameraScreen> {
   Future<void> _analyserPlante() async {
     if (_image == null) return;
 
+    AppLogger.info("Lancement de l'analyse...");
+
     setState(() {
       _isLoading = true;
     });
 
     try {
       final result = await _visionService.analyzerPlante(_image!);
+      
+      AppLogger.success("Analyse terminée. Résultat : ${result['nom']}");
       
       if (mounted) {
         Navigator.push(
@@ -74,6 +85,7 @@ class _CameraScreenState extends State<CameraScreen> {
         );
       }
     } catch (e) {
+      AppLogger.error("Erreur lors de l'analyse UI", e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur lors de l\'analyse: $e')),
@@ -90,6 +102,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   // Fonction pour ouvrir la galerie de test (fichiers locaux)
   Future<void> _ouvrirGalerieTest() async {
+    AppLogger.debug("Ouverture de la galerie de test");
     List<String> imagePaths = [];
     
     try {
@@ -101,8 +114,9 @@ class _CameraScreenState extends State<CameraScreen> {
             .where((String key) => key.startsWith('test_assets/') && 
                                   (key.endsWith('.jpg') || key.endsWith('.png') || key.endsWith('.jpeg')))
             .toList();
+        AppLogger.debug("${imagePaths.length} images trouvées dans le manifeste");
       } catch (e) {
-        print("Manifest JSON non trouvé, passage au mode manuel/fallback");
+        AppLogger.warning("Manifest JSON non trouvé, passage au mode manuel/fallback");
         // Fallback: Si le manifeste échoue (Flutter récent ou Hot Reload), on met les fichiers connus
         imagePaths = [
           'test_assets/plant_test2.jpg',
@@ -163,12 +177,13 @@ class _CameraScreenState extends State<CameraScreen> {
         },
       );
     } catch (e) {
-      print("Erreur chargement galerie test: $e");
+      AppLogger.error("Erreur chargement galerie test", e);
     }
   }
 
   // Convertit un asset en File utilisable par l'API
   Future<void> _convertirAssetEnFichier(String assetPath) async {
+    AppLogger.debug("Conversion asset vers fichier : $assetPath");
     try {
       final directory = await getTemporaryDirectory();
       // On crée un nom de fichier unique basé sur le chemin de l'asset
@@ -182,7 +197,10 @@ class _CameraScreenState extends State<CameraScreen> {
         _image = file;
       });
       
+      AppLogger.success("Image de test chargée");
+      
     } catch (e) {
+      AppLogger.error("Erreur conversion asset", e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur conversion asset: $e')),

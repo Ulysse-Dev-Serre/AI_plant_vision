@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../utils/app_logger.dart';
 
 /// PROVIDER : Service responsable de la reconnaissance visuelle
 /// Ce service fournit l'intelligence artificielle à l'application.
@@ -20,9 +21,13 @@ class VisionApiService {
     }
 
     try {
+      AppLogger.info('Début de l\'analyse d\'image...');
+      
       // Conversion de l'image en base64
       List<int> imageBytes = await imageFile.readAsBytes();
       String base64Image = base64Encode(imageBytes);
+      
+      AppLogger.debug('Image convertie en Base64 (${imageBytes.length} bytes)');
 
       // Préparation de la requête
       Map<String, dynamic> body = {
@@ -32,6 +37,8 @@ class VisionApiService {
       };
 
       // Envoi de la requête POST
+      AppLogger.debug('Envoi requête HTTP vers $_apiUrl');
+      
       final response = await http.post(
         Uri.parse(_apiUrl),
         headers: {
@@ -42,6 +49,7 @@ class VisionApiService {
       );
 
       if (response.statusCode == 200) {
+        AppLogger.success('Réponse API reçue (200 OK)');
         final data = jsonDecode(response.body);
         
         // Vérification si des suggestions existent
@@ -51,6 +59,8 @@ class VisionApiService {
           final plantName = suggestion['plant_name']; // Nom scientifique
           final double probability = suggestion['probability'] ?? 0.0;
           
+          AppLogger.info('Plante identifiée: $plantName (Probabilité: ${(probability * 100).toStringAsFixed(1)}%)');
+
           // Récupération des noms communs
           String commonNames = "";
           if (suggestion['plant_details'] != null && suggestion['plant_details']['common_names'] != null) {

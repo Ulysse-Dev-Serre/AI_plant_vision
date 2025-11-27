@@ -25,6 +25,8 @@ class ResultScreen extends StatelessWidget {
   // Fonction pour sauvegarder la plante
   Future<void> _sauvegarder(BuildContext context) async {
     try {
+      AppLogger.info("Clic bouton Sauvegarder - Plante: $nomPlante");
+      
       final storageService = StorageService();
       // On sauvegarde avec le nom et la description (noms communs)
       // TODO: On pourrait aussi sauvegarder la description wiki si le modèle le permettait
@@ -38,6 +40,7 @@ class ResultScreen extends StatelessWidget {
         Navigator.pop(context);
       }
     } catch (e) {
+      AppLogger.error("Erreur UI lors de la sauvegarde", e);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur lors de la sauvegarde : $e')),
