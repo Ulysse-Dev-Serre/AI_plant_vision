@@ -77,6 +77,9 @@ class _CameraScreenState extends State<CameraScreen> {
               nomPlante: result['nom'] ?? "Inconnu",
               description: result['description'] ?? "",
               image: _image!,
+              wikiDescription: result['wikiDescription'],
+              confiance: result['confiance'] ?? 0.0,
+              isPlantProbability: result['isPlantProbability'],
             ),
           ),
         );
@@ -118,6 +121,7 @@ class _CameraScreenState extends State<CameraScreen> {
         imagePaths = [
           'test_assets/plant_test2.jpg',
           'test_assets/plant_test3.jpg',
+          'test_assets/plant_test4.jpg',
           // Ajoutez vos futurs fichiers ici manuellement si le scan auto échoue
         ];
       }
@@ -226,8 +230,19 @@ class _CameraScreenState extends State<CameraScreen> {
       body: Center(
         child: SingleChildScrollView(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              const SizedBox(height: 30),
+              const Text(
+                "Identifiez votre plante en un clic",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1B5E20),
+                ),
+              ),
+              const SizedBox(height: 40),
               // Afficher l'image si _image != null, sinon afficher une icône
               if (_image != null)
                 Padding(

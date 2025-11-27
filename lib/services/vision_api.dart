@@ -13,13 +13,11 @@ class VisionApiService {
   static const String _apiUrl = 'https://api.plant.id/v2/identify';
 
   /// Analyse une image et retourne les détails de la plante.
-  /// Retourne une Map : {'nom': '...', 'description': '...'}
-  ///
-  /// Utilise un [Future] car l'appel réseau prend du temps (Asynchrone).
-  Future<Map<String, String>> analyzerPlante(File imageFile) async {
+  /// Retourne une Map avec des types dynamiques pour inclure la probabilité, etc.
+  Future<Map<String, dynamic>> analyzerPlante(File imageFile) async {
     if (_apiKey.isEmpty) {
-      AppLogger.error('Clé API non trouvée dans le fichier .env');
-      return {'nom': 'Erreur Config', 'description': 'Clé API manquante'};
+      print('⚠️ ERREUR : Clé API non trouvée dans le fichier .env');
+      return {'nom': 'Erreur Config', 'description': 'Clé API manquante', 'confiance': 0.0};
     }
 
     try {
@@ -59,34 +57,44 @@ class VisionApiService {
           // On prend la première suggestion (la plus probable)
           final suggestion = data['suggestions'][0];
           final plantName = suggestion['plant_name']; // Nom scientifique
-          final probability = suggestion['probability'];
+          final double probability = suggestion['probability'] ?? 0.0;
           
           AppLogger.info('Plante identifiée: $plantName (Probabilité: ${(probability * 100).toStringAsFixed(1)}%)');
 
           // Récupération des noms communs
-          String description = "";
+          String commonNames = "";
           if (suggestion['plant_details'] != null && suggestion['plant_details']['common_names'] != null) {
-            List<dynamic> commonNames = suggestion['plant_details']['common_names'];
-            if (commonNames.isNotEmpty) {
-              description = commonNames.take(3).join(", "); // On prend les 3 premiers
+            List<dynamic> names = suggestion['plant_details']['common_names'];
+            if (names.isNotEmpty) {
+              commonNames = names.take(3).join(", ");
             }
+          }
+
+          // Récupération description Wiki
+          String wikiDescription = "";
+          if (suggestion['plant_details'] != null && 
+              suggestion['plant_details']['wiki_description'] != null &&
+              suggestion['plant_details']['wiki_description']['value'] != null) {
+            wikiDescription = suggestion['plant_details']['wiki_description']['value'];
           }
           
           return {
             'nom': plantName ?? "Nom introuvable",
-            'description': description
+            'description': commonNames, // Noms communs
+            'wikiDescription': wikiDescription, // Description détaillée
+            'confiance': probability, // Probabilité (0.0 à 1.0)
+            'isPlantProbability': data['is_plant_probability'] ?? 0.0, // Proba que ce soit une plante
           };
         } else {
-          AppLogger.warning('Aucune plante détectée sur l\'image');
-          return {'nom': "Non identifié", 'description': "Aucune plante détectée sur l'image"};
+          return {'nom': "Non identifié", 'description': "Aucune plante détectée", 'confiance': 0.0};
         }
       } else {
-        AppLogger.error("Erreur API (${response.statusCode})", response.body);
-        return {'nom': "Erreur API", 'description': "Code ${response.statusCode}"};
+        print("Erreur API (${response.statusCode}): ${response.body}");
+        return {'nom': "Erreur API", 'description': "Code ${response.statusCode}", 'confiance': 0.0};
       }
-    } catch (e, stack) {
-      AppLogger.error("Exception lors de l'analyse", e, stack);
-      return {'nom': "Erreur Connexion", 'description': e.toString()};
+    } catch (e) {
+      print("Erreur Exception: $e");
+      return {'nom': "Erreur Connexion", 'description': e.toString(), 'confiance': 0.0};
     }
   }
 }
