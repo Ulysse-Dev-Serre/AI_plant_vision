@@ -47,6 +47,205 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
   }
 
+  void _afficherDetails(Plant plant, File? imageFile) {
+    final String confidenceText = "${(plant.confiance * 100).toStringAsFixed(1)}%";
+    final String isPlantText = plant.isPlantProbability != null 
+        ? "${(plant.isPlantProbability! * 100).toStringAsFixed(1)}%" 
+        : "--%";
+
+    // DEBUG: Log pour voir ce qui est récupéré
+    AppLogger.debug('Historique - wikiDescription: ${plant.wikiDescription ?? "NULL"}');
+    AppLogger.debug('Historique - confiance: ${plant.confiance}');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: const BoxDecoration(
+            color: Color(0xFFF5F8F1),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          child: Column(
+            children: [
+              // Poignée
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              
+              // Contenu
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // BARRE D'INFO RAPIDE
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Date: ${plant.date.day}/${plant.date.month}/${plant.date.year}",
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                            ),
+                            Text("Proba plante: $isPlantText", style: const TextStyle(fontSize: 11)),
+                          ],
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 16),
+
+                      // CARTE PRINCIPALE
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          children: [
+                            // Header avec nom et confiance
+                            Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFE8F5E9),
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(12),
+                                  topRight: Radius.circular(12),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      plant.nom,
+                                      style: const TextStyle(
+                                        color: Color(0xFF1B5E20),
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF2E7D32),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      "$confidenceText confiance",
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            Padding(
+                              padding: const EdgeInsets.all(14),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Image
+                                  if (imageFile != null)
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Image.file(
+                                        imageFile,
+                                        height: 180,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                  else
+                                    Container(
+                                      height: 180,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[200],
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                                    ),
+                                  
+                                  const SizedBox(height: 16),
+
+                                  // Noms communs
+                                  const Text(
+                                    "Noms communs:",
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[100],
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      plant.description.isNotEmpty ? plant.description : "Non disponible",
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 16),
+
+                                  // Description Wiki
+                                  const Text(
+                                    "Description Wiki:",
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF9F9F9),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                                    ),
+                                    child: Text(
+                                      (plant.wikiDescription != null && plant.wikiDescription!.isNotEmpty)
+                                          ? plant.wikiDescription!
+                                          : "Aucune description Wikipedia disponible.",
+                                      style: const TextStyle(fontSize: 14, height: 1.5),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _supprimerPlante(String id) async {
     try {
       await _storageService.supprimerPlante(id);
@@ -86,6 +285,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     return Card(
                       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       child: ListTile(
+                        onTap: () => _afficherDetails(plant, fileExists ? file : null),
                         leading: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: fileExists

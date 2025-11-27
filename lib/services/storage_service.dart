@@ -17,28 +17,39 @@ class StorageService {
   /// Sauvegarde une nouvelle plante (Image Locale + Données Cloud)
   /// 1. Copie l'image dans un dossier permanent du téléphone
   /// 2. Sauvegarde les infos (dont le chemin local) dans Firestore
-  Future<void> sauvegarderPlante(String nom, String description, File imageFile) async {
+  Future<void> sauvegarderPlante(
+    String nom, 
+    String description, 
+    File imageFile, {
+    String? wikiDescription,
+    double confiance = 0.0,
+    double? isPlantProbability,
+  }) async {
     try {
       // 1. Sauvegarde LOCALE de l'image
-      // On récupère le dossier permanent de l'application
       final directory = await getApplicationDocumentsDirectory();
       final String fileName = '${DateTime.now().millisecondsSinceEpoch}_${path.basename(imageFile.path)}';
       final String localPath = path.join(directory.path, fileName);
       
-      // On copie l'image du cache vers le stockage permanent
       await imageFile.copy(localPath);
       AppLogger.file('Image sauvegardée localement', localPath);
 
-      // 2. Création de l'objet Plant
+      // 2. Création de l'objet Plant avec tous les détails
       DocumentReference docRef = _firestore.collection(collectionName).doc();
+      
+      AppLogger.debug('Sauvegarde wikiDescription: ${wikiDescription != null ? "${wikiDescription.substring(0, wikiDescription.length > 50 ? 50 : wikiDescription.length)}..." : "NULL"}');
+      AppLogger.debug('Sauvegarde confiance: $confiance');
       
       Plant nouvellePlante = Plant(
         id: docRef.id,
         nom: nom,
-        description: description, // On sauvegarde la description
+        description: description,
         imagePath: localPath,
         imageUrl: null,
         date: DateTime.now(),
+        wikiDescription: wikiDescription,
+        confiance: confiance,
+        isPlantProbability: isPlantProbability,
       );
 
       // 3. Sauvegarde dans Firestore

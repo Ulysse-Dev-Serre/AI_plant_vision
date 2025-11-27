@@ -76,6 +76,9 @@ class VisionApiService {
               suggestion['plant_details']['wiki_description'] != null &&
               suggestion['plant_details']['wiki_description']['value'] != null) {
             wikiDescription = suggestion['plant_details']['wiki_description']['value'];
+            AppLogger.debug('Wiki description trouvée: ${wikiDescription.substring(0, wikiDescription.length > 100 ? 100 : wikiDescription.length)}...');
+          } else {
+            AppLogger.debug('Aucune description Wiki disponible pour cette plante');
           }
           
           return {

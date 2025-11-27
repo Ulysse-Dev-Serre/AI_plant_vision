@@ -29,9 +29,14 @@ class ResultScreen extends StatelessWidget {
       AppLogger.info("Clic bouton Sauvegarder - Plante: $nomPlante");
       
       final storageService = StorageService();
-      // On sauvegarde avec le nom et la description (noms communs)
-      // TODO: On pourrait aussi sauvegarder la description wiki si le modèle le permettait
-      await storageService.sauvegarderPlante(nomPlante, description, image);
+      await storageService.sauvegarderPlante(
+        nomPlante, 
+        description, 
+        image,
+        wikiDescription: wikiDescription,
+        confiance: confiance,
+        isPlantProbability: isPlantProbability,
+      );
       
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
