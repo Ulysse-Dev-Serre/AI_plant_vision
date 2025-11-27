@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:intl/intl.dart'; // Pour la date
 import '../services/storage_service.dart';
+import '../utils/app_logger.dart';
 
 class ResultScreen extends StatelessWidget {
   final String nomPlante;

@@ -20,9 +20,7 @@ lib/
 
 ## ENSEMBLE - Modèle de Données
 
-**`lib/models/plant.dart`** - Fichier central partagé entre A et B
-
-pour connaître les attributs disponibles. de nos donnée
+**`lib/models/plant.dart`** - Fichier central partagé entre A et B, pour connaître les attributs disponibles. de nos donnée
 
 **Attributs :**
 - `String nom` : nom de la plante
@@ -30,8 +28,6 @@ pour connaître les attributs disponibles. de nos donnée
 - `DateTime date` : date de détection
 
 **Méthodes :** `toJson()` et `fromJson()` pour sauvegarder/lire les données
-
-**Important :** Toute modification doit être discutée ensemble.
 
 ---
 
@@ -76,30 +72,6 @@ pour connaître les attributs disponibles. de nos donnée
 
 ---
 
-## Contrat entre Personne A et Personne B
-
-### Ce que Personne B DOIT fournir à Personne A
-
-```dart
-// Dans vision_api.dart
-class VisionApiService {
-  Future<String> analyzerPlante(File image);
-}
-
-// Dans storage_service.dart
-class StorageService {
-  Future<void> sauvegarderPlante(String nom, File image);
-  Future<List<Plant>> getHistorique();
-}
-```
-
-### Ce que Personne A peut utiliser
-
-- Personne A peut importer et utiliser ces services même si les fonctions ne sont pas encore complètes
-- Personne A peut tester avec des données fictives en attendant
-
----
-
 ## Configuration Firebase
 
 **PERSONNE B** doit configurer Firebase :
@@ -113,23 +85,6 @@ class StorageService {
 
 ---
 
-## Règles de Collaboration
-**Communiquer les changements** dans le modèle `Plant` (fichier partagé)
 
-
----
-
-## Questions Fréquentes
-
-**Q: Personne A peut-elle commencer sans que Personne B ait fini ?**  
-R: Oui ! Les fichiers squelettes contiennent des `throw UnimplementedError()`. Personne A peut construire l'UI et tester la navigation.
-
-**Q: Comment tester sans l'API ?**  
-R: Personne B peut temporairement retourner `"Test Plant"` au lieu d'appeler l'API.
-
-**Q: Qui crée le fichier `plant.dart` ?**  
-R: Le fichier existe déjà (créé ensemble). Si besoin de modifications, discutez-en à deux.
-
----
 
 
