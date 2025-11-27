@@ -1,5 +1,7 @@
 # Vision Plante 🌿
 
+API = https://web.plant.id/
+
 Application Flutter permettant d'identifier des plantes par photo en utilisant une API de vision par ordinateur. L'application sauvegarde l'historique des plantes scannées localement.
 
 ---
@@ -24,40 +26,31 @@ Structure modulaire séparant les services (logique métier) et l'interface util
 
 ##  Installation et Lancement
 
-### 1. Cloner le projet
-
+###  Cloner le projet
 ```bash
 git clone <url-du-repo>
 cd vision_plante
 ```
 
-### 2. Installer les dépendances
+###  Installer les dépendances
 
 ```bash
 flutter pub get
 ```
 
-### 3. Lancer l'application
+**Trouver emulateur disponivle :**
+```bash
+flutter emulators
+```
+
+**Lancer emulateur exemple :**
+```bash
+flutter emulators --launch Pixel_8
+```
 
 **Sur émulateur Android :**
 ```bash
 flutter run
-```
-
-**Sur navigateur web :**
-```bash
-flutter run -d chrome
-```
-
-**Sur Windows :**
-```bash
-flutter run -d windows
-```
-
-### 4. Vérifier que tout fonctionne
-
-```bash
-flutter doctor
 ```
 
 ---
@@ -76,5 +69,5 @@ lib/
 
 ##  Équipe
 
-- **Personne A** : Interface utilisateur (screens)
-- **Personne B** : Services et logique métier (API, stockage)
+- **Meryem** : Interface utilisateur (screens)
+- **Ulysse** : Services et logique métier (API, stockage)

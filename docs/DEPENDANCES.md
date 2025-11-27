@@ -1,9 +1,3 @@
-# Dépendances du Projet 
-
-```bash
-flutter pub get
-```
-
 ### Dépendances installées
 
 ```bash
@@ -14,11 +8,8 @@ flutter pub add firebase_storage
 flutter pub add image_picker
 ```
 
-Les dépendances sont configurées dans `pubspec.yaml`. Après modification, exécuter `flutter pub get`.
 
----
-
-## Liste des dépendances
+## Liste des dépendances configurées dans `pubspec.yaml`.
 
 **`http: ^1.1.0`**  
 Pour effectuer les requêtes HTTP vers l'API de reconnaissance de plantes.
@@ -37,12 +28,15 @@ Pour accéder à la caméra et prendre des photos des plantes.
 
 ---
 
-## API de Vision Recommandées
+## API de Vision 
 
-### Plant.id (Recommandé)
-- Gratuit : 300 requêtes/mois
+### Plant.id (Recommandé) ✅
+- Gratuit : 100 requêtes/mois 
 - Très précis pour la reconnaissance de plantes
-- https://plant.id/
+- https://plant.id/ 
+ 
+
+ ---
 
 ### Pl@ntNet
 - Gratuit : 500 requêtes/jour

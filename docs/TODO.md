@@ -1,22 +1,8 @@
-##  Architecture du Projet
 
-```
-lib/
-├── main.dart                      ← PERSONNE A (navigation)
-├── models/
-│   └── plant.dart                 ← ENSEMBLE (modèle de données)
-├── services/
-│   ├── vision_api.dart            ← PERSONNE B (appel API)
-│   └── storage_service.dart       ← PERSONNE B (sauvegarde)
-└── screens/
-    ├── camera_screen.dart         ← PERSONNE A (capture photo)
-    ├── result_screen.dart         ← PERSONNE A (affichage résultat)
-    └── history_screen.dart        ← PERSONNE A (liste historique)
-```
 
 ##  Organisation du travail en équipe
 
-### PERSONNE A - Interface Utilisateur (Screens)
+### PERSONNE A - Interface Utilisateur (Screens) --  Meryem
 **Branche Git :** `Screens`
 
 - [ ] **Créer la structure des dossiers**
@@ -35,7 +21,7 @@ lib/
   - [ ] Afficher le nom de la plante
   - [ ] Afficher la photo prise
   - [ ] Bouton "Sauvegarder dans l'historique"
-  - [ ] Bouton "Retour à la caméra"
+  - [ ] Bouton "Nouvelle analyse"  
 
 - [ ] **Écran 3 : History Screen** (`lib/screens/history_screen.dart`)
   - [ ] Liste des plantes scannées
@@ -48,7 +34,7 @@ lib/
 
 ---
 
-### PERSONNE B - Services & Logique Métier
+### PERSONNE B - Services & Logique Métier -- Ulysse
 **Branche Git :** `services`
 
 - [ ] **Créer la structure des dossiers**
@@ -59,14 +45,14 @@ lib/
 - [ ] **Service 1 : Vision API** (`lib/services/vision_api.dart`)
   - [ ] Fonction `analyzerPlante(File image)` 
     - Envoie l'image à l'API
-    - Retourne le nom de la plante
+    - Retourne le nom et detail de la plante 
   - [ ] Gérer les erreurs (pas de connexion, API down, etc.)
 
 - [ ] **Service 2 : Firebase Storage** (`lib/services/storage_service.dart`)
   - [ ] Configurer Firebase (console.firebase.google.com)
   - [ ] Télécharger google-services.json et GoogleService-Info.plist
   - [ ] Fonction `sauvegarderPlante(String nom, File image)`
-    - Upload l'image dans Firebase Storage
+    - Upload l'image dans Firebase Storage  (PAS FAIT) on Upload en local
     - Sauvegarder les données dans Firestore
   - [ ] Fonction `getHistorique()`
     - Lire la collection Firestore
@@ -99,23 +85,6 @@ git push origin services
 
 ---
 
-##  Milestones (Objectifs étape par étape)
 
-### Semaine 1 : Setup
-- [ ] A : Créer les 3 écrans avec du texte de test
-- [ ] B : Tester l'appel API avec Postman/curl
-- [ ] Ensemble : Créer le modèle `Plant`
-
-### Semaine 2 : Intégration
-- [ ] A : Connecter les écrans aux fonctions de B
-- [ ] B : Implémenter la sauvegarde locale
-- [ ] Test : Prendre une photo → voir le résultat
-
-### Semaine 3 : Finitions
-- [ ] A : Améliorer le design (couleurs, icônes)
-- [ ] B : Gérer les erreurs proprement
-- [ ] Test : L'historique fonctionne
-
----
 
 

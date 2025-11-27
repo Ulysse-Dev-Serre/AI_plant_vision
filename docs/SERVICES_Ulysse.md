@@ -1,39 +1,30 @@
 #  Documentation Technique - Services 
 
 
-
-##  Objectif
-Fournir à l'application (UI) des fonctionnalités robustes pour :
-1. **Voir** : Reconnaître une plante via une photo.
-2. **Sauvegarder** : Stocker les résultats dans le cloud (Firebase).
-
  **Configuration**
    - Fichier **firebase_options.dart** généré automatiquement pour supporter Android, iOS et Web.
 ---
 
 ##  Architecture des Services
 
-J'ai développé 3 composants principaux :
+Les 3 composants principaux :
 
 ### 1. Le Modèle de Données (lib/models/plant.dart)
-C'est le contrat d'échange entre l'interface et les services.
-- **Structure** : `nom`, `imagePath` (local), `imageUrl` (cloud), `date`.
+- **Structure** : `nom`, `imagePath`, `imageUrl` , `date`.
 - **Format** : Compatible JSON/Firestore pour la sauvegarde.
 
 ### 2. Service de Vision (lib/services/vision_api.dart)
-L'intelligence de l'application.
-- **Technologie** : API [Plant.id](https://web.plant.id/).
+- **Technologie** : API [Plant.id](https://web.plant.id/). 
 - **Fonctionnement** :
     1. Prend un fichier image.
     2. Convertit l'image en **Base64**.
     3. Envoie une requête HTTPS sécurisée.
-    4. Extrait le nom de la plante le plus probable (ex: "Aloe vera").
+    4. Extrait le nom de la plante le plus probable.
 - **Sécurité** : Clé API intégrée et gestion des erreurs (connexion, pas de réponse).
 
 ### 3. Service de Stockage (lib/services/storage_service.dart)
-La mémoire de l'application.
 - **Technologie** : Firebase (Google).
-- **Firebase Storage** : Stocke les fichiers images lourds.
+- **Firebase Storage** : Firebase Storage était payant, donc on a choisi de sauvegarder les fichiers en local pour ce devoir.
 - **Firestore Database** : Stocke les métadonnées (Nom, Date, URL de l'image).
 - **Fonctionnalité clé** : `sauvegarderPlante()` gère l'upload de l'image ET l'enregistrement en base de données en une seule opération atomique.
 
