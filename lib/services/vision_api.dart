@@ -16,7 +16,7 @@ class VisionApiService {
   /// Retourne une Map avec des types dynamiques pour inclure la probabilité, etc.
   Future<Map<String, dynamic>> analyzerPlante(File imageFile) async {
     if (_apiKey.isEmpty) {
-      print('⚠️ ERREUR : Clé API non trouvée dans le fichier .env');
+      AppLogger.warning('Clé API non trouvée dans le fichier .env');
       return {'nom': 'Erreur Config', 'description': 'Clé API manquante', 'confiance': 0.0};
     }
 
@@ -76,6 +76,9 @@ class VisionApiService {
               suggestion['plant_details']['wiki_description'] != null &&
               suggestion['plant_details']['wiki_description']['value'] != null) {
             wikiDescription = suggestion['plant_details']['wiki_description']['value'];
+            AppLogger.debug('Wiki description trouvée: ${wikiDescription.substring(0, wikiDescription.length > 100 ? 100 : wikiDescription.length)}...');
+          } else {
+            AppLogger.debug('Aucune description Wiki disponible pour cette plante');
           }
           
           return {
@@ -89,11 +92,11 @@ class VisionApiService {
           return {'nom': "Non identifié", 'description': "Aucune plante détectée", 'confiance': 0.0};
         }
       } else {
-        print("Erreur API (${response.statusCode}): ${response.body}");
+        AppLogger.error('Erreur API (${response.statusCode})', response.body);
         return {'nom': "Erreur API", 'description': "Code ${response.statusCode}", 'confiance': 0.0};
       }
     } catch (e) {
-      print("Erreur Exception: $e");
+      AppLogger.error('Erreur lors de l\'analyse', e);
       return {'nom': "Erreur Connexion", 'description': e.toString(), 'confiance': 0.0};
     }
   }
